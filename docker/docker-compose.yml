@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql_rsi
+    environment:
+      MYSQL_DATABASE: rsi
+      MYSQL_ROOT_PASSWORD: ''
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+  smtp:
+    container_name: smtp4dev
+    image: "rnwood/smtp4dev:3.7.0-ci20241213174"
+    ports:
+      - "3001:80"
+      - "2525:25"
+
+volumes:
+  db_data:
