@@ -1,6 +1,7 @@
 package com.rsi.comelit.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.rsi.comelit.enumeration.NotificationType;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ public class Notification {
     private Long id;
 
     @Column(nullable = false)
-    private String type;
+    private NotificationType type;
 
     @OneToOne
     @JoinColumn(name = "receiver_id")

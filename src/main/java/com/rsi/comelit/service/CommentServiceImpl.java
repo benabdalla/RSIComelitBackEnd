@@ -3,11 +3,11 @@ package com.rsi.comelit.service;
 import com.rsi.comelit.entity.Comment;
 import com.rsi.comelit.entity.Post;
 import com.rsi.comelit.entity.User;
-import com.rsi.comelit.exception.CommentNotFoundException;
-import com.rsi.comelit.response.CommentResponse;
 import com.rsi.comelit.enumeration.NotificationType;
+import com.rsi.comelit.exception.CommentNotFoundException;
 import com.rsi.comelit.exception.InvalidOperationException;
 import com.rsi.comelit.repository.CommentRepository;
+import com.rsi.comelit.response.CommentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -85,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
                         authUser,
                         targetComment.getPost(),
                         targetComment,
-                        NotificationType.COMMENT_LIKE.name()
+                        NotificationType.LIKE
                 );
             }
 
@@ -109,7 +109,7 @@ public class CommentServiceImpl implements CommentService {
                 notificationService.removeNotification(
                         targetComment.getPost().getAuthor(),
                         targetComment.getPost(),
-                        NotificationType.COMMENT_LIKE.name()
+                        NotificationType.UNLIKE
                 );
             }
 

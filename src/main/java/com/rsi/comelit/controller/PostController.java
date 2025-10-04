@@ -236,4 +236,13 @@ public class PostController {
         List<PostResponse> taggedPosts = postService.getPostsByUserPaginate(user, page, size);
         return new ResponseEntity<>(taggedPosts, HttpStatus.OK);
     }
+
+    @GetMapping("/posts/all")
+    public ResponseEntity<?> getAllPosts(@RequestParam("page") Integer page,
+                                         @RequestParam("size") Integer size) {
+        page = page < 0 ? 0 : page - 1;
+        size = size <= 0 ? 5 : size;
+        List<PostResponse> taggedPosts = postService.getPostsPaginate(page, size);
+        return new ResponseEntity<>(taggedPosts, HttpStatus.OK);
+    }
 }

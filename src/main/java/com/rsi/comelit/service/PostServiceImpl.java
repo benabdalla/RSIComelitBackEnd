@@ -1,11 +1,10 @@
 package com.rsi.comelit.service;
 
+import com.rsi.comelit.dto.TagDto;
 import com.rsi.comelit.entity.Comment;
 import com.rsi.comelit.entity.Post;
-import com.rsi.comelit.entity.User;
-import com.rsi.comelit.exception.*;
-import com.rsi.comelit.dto.TagDto;
 import com.rsi.comelit.entity.Tag;
+import com.rsi.comelit.entity.User;
 import com.rsi.comelit.enumeration.NotificationType;
 import com.rsi.comelit.exception.EmptyCommentException;
 import com.rsi.comelit.exception.InvalidOperationException;
@@ -95,7 +94,7 @@ public class PostServiceImpl implements PostService {
     }
     @Override
     public List<PostResponse> getPostsPaginate(Integer page, Integer size) {
-        return postRepository.findPosts(
+        return postRepository.findAllByOrderByDateCreatedDesc(
                 PageRequest.of(page, size)).stream().map(this::postToPostResponse).collect(Collectors.toList());
     }
 
@@ -259,7 +258,7 @@ public class PostServiceImpl implements PostService {
                         authUser,
                         targetPost,
                         null,
-                        NotificationType.POST_LIKE.name()
+                        NotificationType.LIKE
                 );
             }
         } else {
@@ -275,14 +274,6 @@ public class PostServiceImpl implements PostService {
             targetPost.setLikeCount(targetPost.getLikeCount()-1);
             targetPost.getLikeList().remove(authUser);
             postRepository.save(targetPost);
-
-            if (!targetPost.getAuthor().equals(authUser)) {
-                notificationService.removeNotification(
-                        targetPost.getAuthor(),
-                        targetPost,
-                        NotificationType.POST_LIKE.name()
-                );
-            }
         } else {
             throw new InvalidOperationException();
         }
@@ -304,7 +295,7 @@ public class PostServiceImpl implements PostService {
                     authUser,
                     targetPost,
                     savedComment,
-                    NotificationType.POST_COMMENT.name()
+                    NotificationType.COMMENT
             );
         }
 
@@ -354,7 +345,7 @@ public class PostServiceImpl implements PostService {
                         authUser,
                         targetPost,
                         null,
-                        NotificationType.POST_SHARE.name()
+                        NotificationType.SHARE
                 );
             }
 

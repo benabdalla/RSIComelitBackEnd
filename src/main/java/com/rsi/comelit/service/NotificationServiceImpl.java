@@ -1,11 +1,12 @@
 package com.rsi.comelit.service;
 
 import com.rsi.comelit.entity.Comment;
+import com.rsi.comelit.entity.Notification;
 import com.rsi.comelit.entity.Post;
 import com.rsi.comelit.entity.User;
+import com.rsi.comelit.enumeration.NotificationType;
 import com.rsi.comelit.exception.NotificationNotFoundException;
 import com.rsi.comelit.repository.NotificationRepository;
-import com.rsi.comelit.entity.Notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserService userService;
+    private final NotificationSender notificationSender;
 
     @Override
     public Notification getNotificationById(Long notificationId) {
@@ -26,13 +28,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Notification getNotificationByReceiverAndOwningPostAndType(User receiver, Post owningPost, String type) {
+    public Notification getNotificationByReceiverAndOwningPostAndType(User receiver, Post owningPost, NotificationType type) {
         return notificationRepository.findByReceiverAndOwningPostAndType(receiver, owningPost, type)
                 .orElseThrow(NotificationNotFoundException::new);
     }
 
     @Override
-    public void sendNotification(User receiver, User sender, Post owningPost, Comment owningComment, String type) {
+    public void sendNotification(User receiver, User sender, Post owningPost, Comment owningComment, NotificationType type) {
         try {
             Notification targetNotification = getNotificationByReceiverAndOwningPostAndType(receiver, owningPost, type);
             targetNotification.setSender(sender);
@@ -55,10 +57,12 @@ public class NotificationServiceImpl implements NotificationService {
             newNotification.setDateLastModified(new Date());
             notificationRepository.save(newNotification);
         }
+        // Envoyer le nombre de notifications mis à jour
+        notificationSender.sendNotificationCount(receiver);
     }
 
     @Override
-    public void removeNotification(User receiver, Post owningPost, String type) {
+    public void removeNotification(User receiver, Post owningPost, NotificationType type) {
         User authUser = userService.getAuthenticatedUser();
         Notification targetNotification = getNotificationByReceiverAndOwningPostAndType(receiver, owningPost, type);
         if (targetNotification.getSender() != null && targetNotification.getSender().equals(authUser)) {
@@ -71,7 +75,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> getNotificationsForAuthUserPaginate(Integer page, Integer size) {
         User authUser = userService.getAuthenticatedUser();
-        return notificationRepository.findNotificationsByReceiver(
+        return notificationRepository.findNotificationsByReceiverAndIsSeenIsFalse(
                 authUser,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "dateUpdated"))
         );
@@ -88,6 +92,8 @@ public class NotificationServiceImpl implements NotificationService {
                         notificationRepository.save(notification);
                     }
                 });
+        // Envoyer le nombre de notifications mis à jour
+        notificationSender.sendNotificationCount(authUser);
     }
 
     @Override
@@ -102,12 +108,16 @@ public class NotificationServiceImpl implements NotificationService {
                         notificationRepository.save(notification);
                     }
                 });
+        // Envoyer le nombre de notifications mis à jour
+        notificationSender.sendNotificationCount(authUser);
     }
 
     @Override
-    public void deleteNotification(User receiver, Post owningPost, String type) {
+    public void deleteNotification(User receiver, Post owningPost, NotificationType type) {
         Notification targetNotification = getNotificationByReceiverAndOwningPostAndType(receiver, owningPost, type);
         notificationRepository.deleteById(targetNotification.getId());
+        // Envoyer le nombre de notifications mis à jour
+        notificationSender.sendNotificationCount(receiver);
     }
 
     @Override
@@ -118,5 +128,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void deleteNotificationByOwningComment(Comment owningComment) {
         notificationRepository.deleteNotificationByOwningComment(owningComment);
+    }
+
+    @Override
+    public int getUnseenNotificationCount(User user) {
+        return notificationRepository.countByReceiverAndIsSeenIsFalse(user);
     }
 }
