@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AbsencePageResponseDto {
-    private List<AbsenceResponseDto> absences;
+    private List<AbsenceResponseDto> data;
     private long total;
     private int page;
     private int limit;

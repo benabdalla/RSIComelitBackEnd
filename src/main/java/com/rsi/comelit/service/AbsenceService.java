@@ -183,6 +183,30 @@ public class AbsenceService {
     }
 
     /**
+     * Get all absences with pagination and filters
+     */
+    @Transactional(readOnly = true)
+    public AbsencePageResponseDto getMyAbsences(int page, int limit) {
+        log.info("Fetching absences - page: {}, limit: {}",
+                page, limit);
+
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<Absence> absencePage = absenceRepository.findByStatusAndUser(Absence.AbsenceStatus.NOT_JUSTIFIED, userService.getAuthenticatedUser(), pageable);
+
+        List<AbsenceResponseDto> absenceDtos = absencePage.getContent().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return new AbsencePageResponseDto(
+                absenceDtos,
+                absencePage.getTotalElements(),
+                page,
+                limit,
+                absencePage.getTotalPages()
+        );
+    }
+
+    /**
      * Get today's absences
      */
     @Transactional(readOnly = true)

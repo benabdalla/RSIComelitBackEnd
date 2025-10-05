@@ -2,6 +2,7 @@ package com.rsi.comelit.repository;
 
 
 import com.rsi.comelit.entity.Absence;
+import com.rsi.comelit.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,9 @@ public interface AbsenceRepository extends JpaRepository<Absence, Long> {
     Page<Absence> findByDate(LocalDate date, Pageable pageable);
     // Find absences by status
     Page<Absence> findByStatus(Absence.AbsenceStatus status, Pageable pageable);
+
+    // Find absences by status
+    Page<Absence> findByStatusAndUser(Absence.AbsenceStatus status, User user, Pageable pageable);
     // Find absences by user ID
     Page<Absence> findByUserId(Long userId, Pageable pageable);
     // Custom query for searching with user details

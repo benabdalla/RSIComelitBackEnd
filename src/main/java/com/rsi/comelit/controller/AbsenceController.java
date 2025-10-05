@@ -4,7 +4,6 @@ import com.rsi.comelit.dto.AbsencePageResponseDto;
 import com.rsi.comelit.dto.AbsenceRequestDto;
 import com.rsi.comelit.dto.AbsenceResponseDto;
 import com.rsi.comelit.dto.JustificationUpdateDto;
-import com.rsi.comelit.exception.DuplicateAbsenceException;
 import com.rsi.comelit.service.AbsenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,20 +28,20 @@ public class AbsenceController {
     /**
      * Create a new absence - This handles POST /api/v1/absences
      */
- @PostMapping
- public ResponseEntity<?> createAbsence(@Valid @RequestBody AbsenceRequestDto request) {
-     log.info("REST request to create absence for user: {}", request.getUserId());
-     try {
-         AbsenceResponseDto result = absenceService.createAbsence(request);
-         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    @PostMapping
+    public ResponseEntity<?> createAbsence(@Valid @RequestBody AbsenceRequestDto request) {
+        log.info("REST request to create absence for user: {}", request.getUserId());
+        try {
+            AbsenceResponseDto result = absenceService.createAbsence(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
 
-     } catch (Exception e) {
+        } catch (Exception e) {
 //         log.error("Error in controller: ", e);
 //         log.warn("Duplicate absence: {}", e.getMessage());
-         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-     }
- }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
 
 
     /**
@@ -62,16 +61,29 @@ public class AbsenceController {
     @GetMapping
     public ResponseEntity<AbsencePageResponseDto> getAbsences(
             @RequestParam(defaultValue = "1") int page,
-             @RequestParam(defaultValue = "10") int limit,
-         @RequestParam(required = false) String search,
-           @RequestParam(required = false) String status,
-           @RequestParam(required = false)
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         log.info("REST request to get absences - page: {}, limit: {}, search: {}, status: {}, date: {}",
                 page, limit, search, status, date);
 
         AbsencePageResponseDto result = absenceService.getAbsences(page, limit, search, status, date);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Get all absences with pagination and filters
+     */
+    @GetMapping("needing-justification")
+    public ResponseEntity<AbsencePageResponseDto> getMyAbsences(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit) {
+        log.info("REST request to get absences - page: {}, limit: {}",
+                page, limit);
+        AbsencePageResponseDto result = absenceService.getMyAbsences(page, limit);
         return ResponseEntity.ok(result);
     }
 
@@ -90,7 +102,7 @@ public class AbsenceController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<AbsenceResponseDto> getAbsenceById(
-           @PathVariable Long id) {
+            @PathVariable Long id) {
         log.info("REST request to get absence: {}", id);
         AbsenceResponseDto result = absenceService.getAbsenceById(id);
         return ResponseEntity.ok(result);
@@ -101,7 +113,7 @@ public class AbsenceController {
      */
     @PatchMapping("/{id}/justify")
     public ResponseEntity<AbsenceResponseDto> updateJustification(
-           @PathVariable Long id,
+            @PathVariable Long id,
             @Valid @RequestBody JustificationUpdateDto request) {
         log.info("REST request to update justification for absence: {}", id);
         AbsenceResponseDto result = absenceService.updateJustification(id, request);
@@ -126,7 +138,7 @@ public class AbsenceController {
     @DeleteMapping("/{id}")
 
     public ResponseEntity<Void> deleteAbsence(
-           @PathVariable Long id) {
+            @PathVariable Long id) {
         log.info("REST request to delete absence: {}", id);
         absenceService.deleteAbsence(id);
         return ResponseEntity.noContent().build();
