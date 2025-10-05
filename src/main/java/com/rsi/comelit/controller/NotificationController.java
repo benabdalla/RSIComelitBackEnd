@@ -1,6 +1,6 @@
 package com.rsi.comelit.controller;
 
-import com.rsi.comelit.entity.Notification;
+import com.rsi.comelit.dto.NotificationDto;
 import com.rsi.comelit.entity.User;
 import com.rsi.comelit.service.NotificationService;
 import com.rsi.comelit.service.UserService;
@@ -20,11 +20,10 @@ NotificationController {
     private final UserService userService;
 
     @GetMapping("/notifications")
-    public ResponseEntity<?> getNotifications(@RequestParam("page") Integer page,
-                                              @RequestParam("size") Integer size) {
+    public ResponseEntity<?> getNotifications(@RequestParam("page") Integer page, @RequestParam("size") Integer size) {
         page = page < 0 ? 0 : page-1;
         size = size <= 0 ? 5 : size;
-        List<Notification> notifications = notificationService.getNotificationsForAuthUserPaginate(page, size);
+        List<NotificationDto> notifications = notificationService.getNotificationsForAuthUserPaginate(page, size);
         return new ResponseEntity<>(notifications, HttpStatus.OK);
     }
 

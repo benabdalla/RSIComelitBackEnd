@@ -10,4 +10,5 @@ public enum NotificationType {
     MESSAGE,
     MENTION,
     TAG,
+    NOT_JUSTIFIED_ABSENCE,
 }

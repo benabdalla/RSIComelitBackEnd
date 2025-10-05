@@ -5,6 +5,7 @@ import com.rsi.comelit.dto.AbsenceResponseDto;
 import com.rsi.comelit.dto.JustificationUpdateDto;
 import com.rsi.comelit.entity.Absence;
 import com.rsi.comelit.entity.User;
+import com.rsi.comelit.enumeration.NotificationType;
 import com.rsi.comelit.exception.DuplicateAbsenceException;
 import com.rsi.comelit.exception.ResourceNotFoundException;
 import com.rsi.comelit.repository.AbsenceRepository;
@@ -30,6 +31,8 @@ public class AbsenceService {
 
     private final AbsenceRepository absenceRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
+    private final NotificationService notificationService;
 
     /**
      * Create a new absence
@@ -77,7 +80,13 @@ public class AbsenceService {
             log.info("Saving absence with status: {}", absence.getStatus());
             Absence savedAbsence = absenceRepository.save(absence);
             log.info("Absence created successfully with id: {}", savedAbsence.getId());
-
+            notificationService.sendNotification(
+                    user,
+                    userService.getAuthenticatedUser(),
+                    null,
+                    null,
+                    NotificationType.NOT_JUSTIFIED_ABSENCE
+            );
             return convertToDto(savedAbsence);
 
         } catch (Exception e) {
